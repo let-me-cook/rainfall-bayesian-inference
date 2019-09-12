@@ -5,4 +5,4 @@ Rainfall Inference with Bayesian Methods using BMKG's Datasets based on a paper 
 Work done by :
 1. Alfath Daryl Alhajir
 2. Muhammad Idham F.
-3. Muhammad Amir Hakim
+3. Amir Muhammad Hakim
