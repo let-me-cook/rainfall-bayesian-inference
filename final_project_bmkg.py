@@ -16,10 +16,14 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, classification_report, jaccard_score
 
 # List yang berisi semua nama file
-excel_filenames = [bulan + " 2018.xlsx" for bulan in ["Januari", "Februari", "Maret", 
-                                                       "April", "Mei", "Juni", 
-                                                       "Juli", "Agustus", "September", 
-                                                       "Oktober", "November", "Desember"]]
+excel_filenames = [bulan + " 2018.xlsx" for bulan in ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]]
+
+class DataPreprocessing:
+	def excel_preprocess():
+		def generate_excel_filenames(starts_with_list, ends_with_string):
+			
+
+
 
 # Mengambil file .xlsx dan mengubah .xslx menjadi dataframe
 def excelparser(excel_filename):
