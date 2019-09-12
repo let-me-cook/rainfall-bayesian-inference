@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1zKep9OIYjLiISMJpEWzFU1yknzszwUZ1
 """
 
-#!pip install -U scikit-learn
+#pip install -U scikit-learn
 # ^ Pake jika import gagal
 # ^ Setelah dirun, restart runtime
 
@@ -39,15 +39,19 @@ def excelcombiner(excel_filename):
   return pd.concat(df_list, ignore_index = True)
 
 # Buat file csv dari semua file .xslx dengan mengambil list yang berisi nama .xslx
-def csv_create(excel_filename):
+def csv_create(excel_filename, output_filename):
   # Ambil nama file excel yang akan dibuat ke csv lalu masukkan kedalam fungsi excelcombiner
   df = excelcombiner(excel_filename)
   
   # Buat file csv dengan dataframe yang diambil tanpa memedulikan index
-  return df.to_csv("final.csv", index = False)
+  return df.to_csv(output_filename, index = False)
 
 # Buat file csv dari semua file .xslx 
-csv_create(excel_filenames)
+csv_create(excel_filenames, "training.csv")
+
+# Data testing
+excel_filenames = [bulan + " 2019.xlsx" for bulan in ["Januari", "Februari"]]
+csv_create(excel_filenames, "testing.csv")
 
 # Preprocess csv yang dibuat agar mempunyai nama kolom yang dapat dimengerti dan format yang sesuai
 def csv_preprocess(csv_filename):
@@ -66,7 +70,7 @@ def csv_preprocess(csv_filename):
                            "lama_sinar", "cepat_angin_rata", "curah_hujan"])
   
   # Buang row apabila data tidak ada (8888.0 / NaN)
-  df = df.drop(df[(df.curah_hujan == 8888.0) | (np.isnan(df.curah_hujan))].index)
+  df = df.drop(df[(df.curah_hujan == 8888.0) | (np.isnan(df.curah_hujan)) | (np.isnan(df.suhu_rendah)) | (np.isnan(df.suhu_tinggi)) | (np.isnan(df.lama_sinar)) | (np.isnan(df.cepat_angin_rata))].index) 
   
   
   # Lakukan iterasi pada setiap row dan ubah nilai curah_hujan sesuai klasifikasi BMKG
@@ -81,7 +85,7 @@ def csv_preprocess(csv_filename):
   return df.reset_index(drop = True)
 
 # Lakukan fungsi preprocess terhadap file .csv
-csv_preprocess("final.csv")
+csv_preprocess("testing.csv")
 
 # Membuat dataframe yang berisi informasi standar defiasi dan rata-rata dari setiap kelas dan feature
 def generate_df_std_mean(csv_filename):
@@ -116,7 +120,7 @@ def generate_df_std_mean(csv_filename):
   # Mengembalikan dataframe
   return df
 
-generate_df_std_mean("final.csv")
+generate_df_std_mean("training.csv")
 
 # Fungsi Gaussian Naive Bayes yang sesuai dengan isi paper
 def function_gnb(x, std_feature, mean_feature):
@@ -153,17 +157,17 @@ def highest_dict(_dict):
 
 
 prediksi = {"suhu_rendah": 25.8,"suhu_tinggi": 32.4,"lembap_rata": 79,"lama_sinar": 4.6,"cepat_angin_rata": 1}
-prediksi_dict = predict_gnb(prediksi, generate_df_std_mean("final.csv"))
+prediksi_dict = predict_gnb(prediksi, generate_df_std_mean("training.csv"))
 print(prediksi_dict)
 highest_dict(prediksi_dict)
 
 # Fungsi untuk membuat tuple yang berisi list hasil_benar, list hasil_prediksi,list dan kelas
-def generate_pred_true(csv_filename):
+def generate_pred_true(csv_predict, csv_filename):
   # Ambil dataframe dari csv
-  df = csv_preprocess(csv_filename)
+  df = csv_preprocess(csv_predict)
   
   # Ambil dataframs std dan rata-rata dari csv
-  df_std_mean = generate_df_std_mean(csv_filename)
+  df_std_mean = generate_df_std_mean("training.csv")
   
   # Ambil list hasil benar menggunakan fungsi iloc
   true = list(df.iloc[:,-1])
@@ -175,7 +179,7 @@ def generate_pred_true(csv_filename):
   labels = df[df.columns[-1]].unique()
   
   # Buat dictionary dari setiap row dataframe
-  dict_list = csv_preprocess(csv_filename).iloc[:,:-1].to_dict('records')
+  dict_list = csv_preprocess(csv_predict).iloc[:,:-1].to_dict('records')
   
   # Aplikasikan fungsi dari setiap dictionary yang dibuat dari setiap row dataframe kedalam fungsi predict_gnb
   for dict_pred in dict_list:
@@ -184,7 +188,8 @@ def generate_pred_true(csv_filename):
   # Kembalikan tuple yang berisi list hasil_benar, list hasil_prediksi,list dan kelas
   return (true, pred, df[df.columns[-1]].unique())
 
-tp_tuple = generate_pred_true("final.csv")
+tp_tuple = generate_pred_true("testing.csv","training.csv")
+print(tp_tuple[1], tp_tuple[0])
 
 # Fungsi untuk membuat laporan confusion matrix, akurasi, presisi, recall, dan error ratio
 def generate_report(tp_tuple):
@@ -193,7 +198,7 @@ def generate_report(tp_tuple):
   
   # Aplikasikan semua variabel kedalam fungsi yang disediakan library scikit-learn
   cf_matrix = confusion_matrix(true, pred, labels = labels)
-  accuracy =  jaccard_score(true, pred, average = None, labels = labels)
+  accuracy = jaccard_score(true, pred, average = None, labels = labels)
   precision = precision_score(true, pred, average = None, labels = labels)
   recall = recall_score(true, pred, average = None, labels = labels)
   error_ratio = np.array([1 - rate for rate in accuracy])
