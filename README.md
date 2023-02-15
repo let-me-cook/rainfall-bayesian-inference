@@ -3,6 +3,6 @@ Rainfall Inference with Bayesian Methods using BMKG's Datasets based on a paper 
 "Klasifikasi Curah Hujan di Provinsi Bali Berdasarkan Metode Naive Bayesian".
 
 Work done by :
-1. Alfath Daryl Alhajir
+1. Alfath
 2. Muhammad Idham F.
 3. Amir Muhammad Hakim
